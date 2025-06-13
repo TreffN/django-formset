@@ -98,7 +98,6 @@ class FieldGroup {
 					break;
 				default:
 					if (element.getAttribute('is') === 'django-leafletclient') {
-						// TODO: korrekter EventListener
 						element.addEventListener('django-leaflet-drawn', () => {this.validate()});
 						element.addEventListener('invalid', () => this.showErrorMessage(element));
 					} else {
@@ -699,7 +698,7 @@ class DjangoButton {
 	submit(data?: Object) {
 		return () => {
 			return new Promise((resolve, reject) => {
-				this.formset.submit(data).then(response => 
+				this.formset.submit(data).then(response =>
 					response instanceof Response && response.status === 200 ? resolve(response) : reject(response)
 				);
 			});
@@ -2143,6 +2142,7 @@ export class DjangoFormset implements DjangoFormset {
 				entry[relPath[0]] = innerArray;
 			}
 		}
+
 		if (this.data === undefined) {
 			// submit an untouched formset
 			this.aggregateValues();
@@ -2352,9 +2352,7 @@ export class DjangoFormset implements DjangoFormset {
 		for (const form of this.forms) {
 			const errors = form.name ? getDataValue(body, form.name.split('.'), null) : body;
 			if (!isEmpty(errors)) {
-				if (Object.keys(errors).includes('custom_leaflet')) {
-					// debugger;
-				}
+				// TODO: report backend errors?
 				form.reportCustomErrors(new Map(Object.entries(errors)));
 				form.reportValidity();
 			} else {

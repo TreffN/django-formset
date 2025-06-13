@@ -65,8 +65,8 @@ class LeafletClientField {
       this.drawnGeometries.clearLayers();
       this.map.eachLayer(layer => {
         if (layer instanceof L.Polygon || layer instanceof L.Polyline || layer instanceof L.Marker) {
-          const geom_found = this.drawnGeometries.toGeoJSON().features.find(f => JSON.stringify(f.geometry) === JSON.stringify(layer.toGeoJSON().geometry));
           // check if layer is not contained multiple times
+          const geom_found = this.drawnGeometries.toGeoJSON().features.find(f => JSON.stringify(f.geometry) === JSON.stringify(layer.toGeoJSON().geometry));
           if (!geom_found) this.drawnGeometries.addLayer(layer);
         }
       });
