@@ -346,8 +346,10 @@ class FieldGroup {
 			this.errorPlaceholder.innerHTML = '';
 		}
 		for (const element of this.fieldElements) {
-			if (element.validity.customError)
-				element.setCustomValidity('');
+			if (element.validity) {
+				if (element.validity.customError)
+					element.setCustomValidity('');
+			}
 		}
 	}
 
@@ -442,8 +444,7 @@ class FieldGroup {
 				element.dispatchEvent(new Event('invalid'));
 			}
 		} else {
-			// this.form.formset.validate(); // TODO: for validate() Leaflet
-			// debugger;
+			this.setDirty();
 			if (!div_valid) element.dispatchEvent(new Event('invalid'));
 		}
 	}
