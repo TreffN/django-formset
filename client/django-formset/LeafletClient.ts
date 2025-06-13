@@ -1,9 +1,3 @@
-// Probleme bei Import: Uncaught TypeError: L.Map.djangoMap is not a function at loadmap
-// import * as L from 'leaflet';
-//import 'leaflet-draw';
-//import 'leaflet-draw/dist/leaflet.draw.css';
-//import L from 'leaflet';
-
 import booleanValid from '@turf/boolean-valid';
 import { Layer } from 'leaflet';
 
@@ -14,7 +8,6 @@ class LeafletClientField {
   private geometries_drawn: boolean;
 
   constructor(element: HTMLDivElement) {
-    console.log('constructing');
     this.divElement = element;
     this.drawnGeometries = L.featureGroup();
     this.geometries_drawn = false;
@@ -44,57 +37,28 @@ class LeafletClientField {
   }
 
   public initialize() {
-    console.log('initializing');
     const me = this;
     this.divElement.addEventListener('django-leaflet-client-on-map-ready', evt => {
       const map = (evt as CustomEvent).detail.map as L.Map;
-      console.log('Map: ', map);
       me.setMap(map);
     });
     this.divElement.dispatchEvent(new CustomEvent('leaflet-client-initialized', {}));
   }
 
-  public checkValidity(): boolean {
-    //TODO: bei korrektem Event feuern
+  public checkValidity(): boolean { //TODO: timed correctly? 
     let geom_valid: boolean = true;
-    //console.log('LeafletClient: check validity', this.drawnGeometries.getLayers());
-
-    // Methode 1:
-    // const features = this.drawnGeometries.toGeoJSON().features; // TODO(12.06): mit den Layern aus drawGeometries arbeiten!!!
-    // if (features.length > 0) {
-    //   features.forEach(feat => {
-    //     //geom_valid = geom_valid && !booleanValid(g.geometry); // correct
-    //     geom_valid = feat.geometry.type === 'LineString' ? false : true; // zum Testen
-    //     //console.log(g.geometry, booleanValid(g.geometry)); // turf.kinks -> self intersection
-    //     feat.properties.valid = geom_valid;
-    //   });
-    //   this.changeGeomColor();
-    // }
-
-    // Methode 2:
+ 
     this.drawnGeometries.eachLayer(layer => {
       const geometry = layer.toGeoJSON().geometry;
-      geom_valid = geometry.type === 'LineString' ? false : true; // zum Testen
-      // layer.feature = layer.feature || {};
-      // layer.feature.properties = layer.feature.properties || {};
-      // layer.feature.properties.valid = geom_valid; // -> wollen nciht, dass es danach in DB auftaucht!
-      console.log('layer', this.drawnGeometries.getLayers());
+      geom_valid = geometry.type === 'LineString' ? false : true; // test
+      //geom_valid = geom_valid && !booleanValid(geometry); // correct
       this.changeGeomColor(layer, geom_valid);
     });
-
-    //Methode 3:
-    // this.drawnGeometries.toGeoJSON().features.forEach(feature => { // does not work because of copy from toGeoJSON()
-    //   const type = feature.geometry.type;
-    //   geom_valid = type === 'LineString' ? false : true; // zum Testen
-    //   feature.properties = feature.properties || {};
-    //   feature.properties.valid = geom_valid;
-    //   console.log('feature', feature);
-    // });
 
     return geom_valid;
   }
 
-  public getGeometry(): string | undefined {
+  public getGeometryCollection(): string | undefined {
     if (!this.map) return undefined;
 
     if (!this.geometries_drawn) {
@@ -117,27 +81,11 @@ class LeafletClientField {
   }
 
   public changeGeomColor(layer: Layer, is_valid: boolean) {
-    // if (this.map) {
-    //   this.map.removeLayer(feature);
-    //   L.geoJSON(feature, {
-    //     style: {
-    //       color: 'red',
-    //     },
-    //   }).addTo(this.map);
-    // TODO: remove geom from before
-    //}
-
-    // Methode 2
-    //this.drawnGeometries.eachLayer(layer => {
-      //console.log('layer 2', layer.toGeoJSON());
-    //  const isValid = layer.feature?.properties?.valid;
-
       if ((layer as any).setStyle && !is_valid) {
         (layer as any).setStyle({
           color: 'red',
         });
       }
-    //});
   }
 }
 
@@ -159,7 +107,7 @@ export class LeafletClientElement extends HTMLDivElement {
     return this[PN].checkValidity();
   }
 
-  getGeometry() {
-    return this[PN].getGeometry();
+  getGeometryCollection() {
+    return this[PN].getGeometryCollection();
   }
 }

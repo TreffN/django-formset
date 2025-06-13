@@ -60,26 +60,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
 				}).catch(err => reject(err));
 			}));
 		}
-		// if (fragmentRoot.querySelector('div[is="django-leafletclient"]')) {
-		// 	promises.push(new Promise((resolve, reject) => {
-		// 		import('./django-formset/LeafletClient').then(({LeafletClientElement}) => {
-		// 			const leafletElements = fragmentRoot.querySelectorAll('div[is="django-leafletclient"]');
-		// 			window.customElements.whenDefined('django-leafletclient').then(() => {
-		// 				Promise.all(Array.from(leafletElements).map(leafletElement => new Promise<void>(resolve => {
-		// 					if (isTemplate || (leafletElement as any).isInitialized) {
-		// 						resolve();
-		// 					} else {
-		// 						//leafletElement.addEventListener('django-leaflet-client-on-map-ready', () => resolve(), {once: true}); //TODO
-		// 						leafletElement.addEventListener('connected', () => resolve(), {once: true});
-		// 					}
-		// 				}))).then(() => resolve());
-		// 			}).then(() => resolve());
-		// 			if (!(window.customElements.get('django-leafletclient') instanceof Function)) {
-		// 				window.customElements.define('django-leafletclient', LeafletClientElement, {extends: 'div'});
-		// 			}
-		// 		}).catch(err => reject(err));
-		// 	}));
-		// }
 		if (fragmentRoot.querySelector('textarea[is="django-richtext"]')) {
 			promises.push(new Promise((resolve, reject) => {
 				import('./django-formset/RichtextArea').then(({RichTextAreaElement}) => {

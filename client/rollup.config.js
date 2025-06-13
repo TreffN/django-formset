@@ -45,11 +45,11 @@ export default {
       ecma: 2017,
       module: true,
       warnings: true,
-      // mangle: {
-      //   properties: {
-      //     regex: /^__/,
-      //   },
-      // },
+      mangle: {
+        properties: {
+          regex: /^__/,
+        },
+      },
     }),
     summary(),
   ],

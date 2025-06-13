@@ -78,17 +78,12 @@ class FieldGroup {
 		if (inputElements.length === 0) {
 			inputElements = Array.from(element.getElementsByTagName('DIV')) as unknown as Array<HTMLInputElement>
 		}
-		//console.log(inputElements)
-		// const leafletElements = element.querySelectorAll('div[is="django-leafletclient"]');
-		// console.log('leaflet elements', leafletElements);
-		// inputElements.push(...leafletElements as unknown as Array<HTMLInputElement>);
-		// console.log('adding drawn listener');
 		
 		for (const element of inputElements) {
 			switch (element.type) {
 				case 'checkbox':
-					case 'radio':
-						element.addEventListener('input', () => {
+				case 'radio':
+					element.addEventListener('input', () => {
 						this.touch();
 						this.inputted();
 					});
@@ -96,15 +91,11 @@ class FieldGroup {
 						requiredAny ? this.validateCheckboxSelectMultiple() : this.validate();
 					});
 					break;
-					case 'file':
-						// @ts-ignore
-						this.fileUploader = new FileUploadWidget(this, element);
-						element.addEventListener('invalid', () => this.showErrorMessage(element));
+				case 'file':
+					// @ts-ignore
+					this.fileUploader = new FileUploadWidget(this, element);
+					element.addEventListener('invalid', () => this.showErrorMessage(element));
 					break;
-					// case 'div':
-					// 	console.log('adding drawn listener');
-					// 	element.addEventListener('django-leaflet-drawn', () => this.validate());
-					// 	break;
 				default:
 					if (element.getAttribute('is') === 'django-leafletclient') {
 						// TODO: korrekter EventListener
@@ -171,7 +162,6 @@ class FieldGroup {
 	public aggregateValue(): FieldValue {
 		if (this.fieldElements.length === 1) {
 			const element = this.fieldElements[0];
-			//debugger;
 			if (element.type === 'checkbox') {
 				return (element as HTMLInputElement).checked ? element.value : '';
 			}
@@ -208,7 +198,6 @@ class FieldGroup {
 			return element.value;
 		} else {
 			const value = [];
-			//debugger;
 			for (let element of this.fieldElements) {
 				if (element.type === 'checkbox') {
 					if ((element as HTMLInputElement).checked) {
@@ -218,9 +207,7 @@ class FieldGroup {
 					if ((element as HTMLInputElement).checked)
 						return element.value;
 				} else if (element.getAttribute('is') === 'django-leafletclient') {
-					// const coords_wkt = (element as unknown as LeafletClientElement).getMapCoordinates();
-					// return coords_wkt;
-					return (element as unknown as LeafletClientElement).getGeometry();
+					return (element as unknown as LeafletClientElement).getGeometryCollection();
 				}
 			}
 			return value;
@@ -272,7 +259,6 @@ class FieldGroup {
 	}
 
 	private assertUniqueName() : string { // TODO
-		//debugger;
 		let name = '__undefined__';
 		for (const element of this.fieldElements) {
 			if (name === '__undefined__') {
@@ -432,7 +418,6 @@ class FieldGroup {
 	}
 
 	public validate() {
-		//console.log('validating djangoformset');
 		let element: FieldElement|null = null;
 		let div_valid: boolean = true;
 		for (element of this.fieldElements) {
@@ -458,8 +443,8 @@ class FieldGroup {
 				element.dispatchEvent(new Event('invalid'));
 			}
 		} else {
-			this.form.formset.validate(); // new
-			debugger;
+			// this.form.formset.validate(); // TODO: for validate() Leaflet
+			// debugger;
 			if (!div_valid) element.dispatchEvent(new Event('invalid'));
 		}
 	}
@@ -537,7 +522,6 @@ class FieldGroup {
 	}
 
 	public reportCustomError(message: string) {
-		// debugger;
 		if (this.errorPlaceholder) {
 			this.errorPlaceholder.innerHTML = message;
 		}
@@ -712,15 +696,11 @@ class DjangoButton {
 	 * Validate form content and submit to the endpoint given in element `<django-formset>`.
 	 */
 	//@allowedAction
-	// response.status === 200
 	submit(data?: Object) {
-		//debugger;
 		return () => {
 			return new Promise((resolve, reject) => {
-				this.formset.submit(data).then(response => {
-					console.log('submit response', response);
+				this.formset.submit(data).then(response => 
 					response instanceof Response && response.status === 200 ? resolve(response) : reject(response)
-				}
 				);
 			});
 		};
@@ -1046,10 +1026,8 @@ class DjangoButton {
 		const successHandler = (actions: Array<ButtonAction>) => {
 			let promise: Promise<Response>|undefined;
 			for (const action of actions.values()) {
-				//debugger;
 				promise = promise ? promise.then(async response => {
 					const body = response ? await response.clone().json() : {} as JSONValue;
-					//debugger;
 					return action.func.apply(this, action.args.map(inner(body)))(response);
 				}) : action.func.apply(this, action.args.map(inner()))();
 			}
@@ -1265,16 +1243,12 @@ class DjangoForm {
 	aggregateValues(): Map<string, FieldValue> {
 		const data = new Map<string, FieldValue>();
 		for (const fieldGroup of this.fieldGroups) {
-			console.log('aggregateValue', fieldGroup.aggregateValue());
-			debugger;
-			data.set(fieldGroup.name ?? 'caption', fieldGroup.aggregateValue()); // TODO: custom_leaflet zur fieldGroup hinzufügen
+			data.set(fieldGroup.name ?? 'caption', fieldGroup.aggregateValue()); // caption for leaflet caption
 		}
 		// hidden fields are not handled by a <div role="group">
 		for (const element of this.hiddenInputFields.filter(e => e.type === 'hidden')) {
-			//debugger;
 			data.set(element.name, element.value);
 		}
-		console.log('data', data);
 		return data;
 	}
 
@@ -1326,7 +1300,6 @@ class DjangoForm {
 	}
 
 	validate() : boolean {
-		debugger;
 		return this.formset.validate();
 	}
 
@@ -1366,7 +1339,6 @@ class DjangoForm {
 	}
 
 	private handleSubmit = (event: Event) => {
-		debugger;
 		if (event.target instanceof HTMLFormElement && event.target.method === 'dialog') {
 			this.setSubmitted();
 			return;
@@ -1394,7 +1366,6 @@ class DjangoForm {
 
 	reportCustomErrors(errors: Map<string, Array<string>>) {
 		this.clearCustomErrors();
-		//debugger;
 		const nonFieldErrors = errors.get(NON_FIELD_ERRORS);
 		if (this.errorList && Array.isArray(nonFieldErrors) && this.errorPlaceholder) {
 			for (const message of nonFieldErrors) {
@@ -1404,7 +1375,7 @@ class DjangoForm {
 			}
 		}
 		for (const fieldGroup of this.fieldGroups) {
-			const fieldErrors = errors.get(fieldGroup.name || 'custom_leaflet'); // TODO: custom_leaflet zur fieldGroup hinzufügen
+			const fieldErrors = errors.get(fieldGroup.name);
 			if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
 				fieldGroup.reportCustomError(fieldErrors[0]);
 			}
@@ -1824,15 +1795,14 @@ class DjangoFormCollectionTemplate {
 			Array.from(oldScript.attributes).forEach(attr =>
 				newScript.setAttribute(attr.name, attr.value)
 			);
-			// TODO: andere Möglichkeit loadevent zu ändern?
-			let modifiedCode = oldScript.textContent.includes('var loadevents = ["load"];') ? 
+			// TODO: other possibility to change loadevent?
+			let modifiedCode = oldScript.textContent?.includes('var loadevents = ["load"];') ? 
 				oldScript.textContent.replace('var loadevents = ["load"];',	'var loadevents = [];') : oldScript.textContent;
 			newScript.textContent = modifiedCode;
 			oldScript.parentNode.replaceChild(newScript, oldScript);
 		});
 		
-		// wegen Fehlermeldung: Map container is already initialized -> mögliche Lösung: id anpassen
-		// ID für div von leafletmap
+		// Adjust id for leaflet, otherwise: Map container is already initialized
 		if (firstElement) {
 			const div_leaflet = firstElement.querySelector('div[is=django-leafletclient]');
 
@@ -1925,7 +1895,6 @@ export class DjangoFormset implements DjangoFormset {
 	}
 
 	connectedCallback() {
-		// connectedCallback() auch nach "submit" bzw. anschließendem "reload()" von Leaflet-Collection ausführen -> Problem mit Promises behoben
 		this.findErrorsPlaceholder();
 		this.findForms();
 		this.findFormCollections();
@@ -1987,12 +1956,11 @@ export class DjangoFormset implements DjangoFormset {
 
 	public assignFieldsToForms(parentElement?: Element) {
 		parentElement = parentElement ?? this.element;
-		for (const fieldElement of parentElement.querySelectorAll('INPUT, SELECT, TEXTAREA, BUTTON, DIV[is="django-leafletclient"]')) { // TODO: django-leafletclient in Variable auslagern
+		for (const fieldElement of parentElement.querySelectorAll('INPUT, SELECT, TEXTAREA, BUTTON, DIV[is="django-leafletclient"]')) { // TODO: swap django-leafletclient to variable
 			const formId = fieldElement.getAttribute('form');
 			let djangoForms: DjangoForm[] = [];
 			if (!formId) {
 				if (fieldElement instanceof HTMLDivElement) {
-					//debugger;
 					// find corresponding django-form for leaflet map
 					fieldElement.setAttribute('name', 'geometry');
 					const form_collections = parentElement.matches('django-form-collection') ? [parentElement] :
@@ -2005,7 +1973,6 @@ export class DjangoFormset implements DjangoFormset {
 			} else {
 				djangoForms = this.forms.filter(form => form.formId && form.formId === formId);
 			}
-			//console.log('djangoForms', djangoForms, fieldElement);
 			if (djangoForms.length < 1)
 				continue;
 			if (djangoForms.length > 1)
@@ -2130,7 +2097,6 @@ export class DjangoFormset implements DjangoFormset {
 	}
 
 	public validate() : boolean {
-		debugger;
 		let isValid = true;
 		for (const form of this.forms) {
 			isValid = (form.markedForRemoval || form.checkValidity()) && isValid;
@@ -2177,7 +2143,6 @@ export class DjangoFormset implements DjangoFormset {
 				entry[relPath[0]] = innerArray;
 			}
 		}
-		//debugger;
 		if (this.data === undefined) {
 			// submit an untouched formset
 			this.aggregateValues();
@@ -2198,7 +2163,6 @@ export class DjangoFormset implements DjangoFormset {
 			if (!form.name) {
 				// it's a single form, which doesn't have a name
 				const formsetData = Object.fromEntries(form.aggregateValues());
-				//debugger;
 				return Object.assign({}, {'formset_data': formsetData}, {_extra: extraData});
 			}
 			if (form.isTransient)
@@ -2216,7 +2180,6 @@ export class DjangoFormset implements DjangoFormset {
 	}
 
 	async submit(extraData?: Object) : Promise<Response|undefined> {
-		//debugger;
 		let formsAreValid = true;
 		this.setSubmitted();
 		if (!this.forceSubmission) {
@@ -2229,11 +2192,9 @@ export class DjangoFormset implements DjangoFormset {
 		if (formsAreValid) {
 			if (!this.endpoint)
 				throw new Error("<django-formset> requires attribute 'endpoint=\"server endpoint\"' for submission");
-			debugger;
-			this.removeFreshCollections(); // TODO: Achtung: this.data muss davor befüllt sein
+			this.removeFreshCollections(); // TODO: isFreshAndEmpty should be set to false for leaflet, when geometry is drawn
 			const body = this.buildBody(extraData);
 			console.log('Body: ', body);
-			debugger;
 			try {
 				const headers = new Headers();
 				headers.append('Accept', 'application/json');
@@ -2388,7 +2349,6 @@ export class DjangoFormset implements DjangoFormset {
 
 	private reportErrors(body: any) {
 		console.info("Response from server:", body);
-		// debugger;
 		for (const form of this.forms) {
 			const errors = form.name ? getDataValue(body, form.name.split('.'), null) : body;
 			if (!isEmpty(errors)) {
