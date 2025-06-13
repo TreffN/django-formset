@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+    'django.contrib.gis',
+    'leaflet',
     'formset',
     'testapp',
     'django_countries',
@@ -35,7 +37,7 @@ else:
 if os.getenv('DATABASE_ENGINE') == 'postgres':
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',#'django.db.backends.postgresql',
             'NAME': os.getenv('POSTGRES_DB'),
             'USER': os.getenv('POSTGRES_USER'),
             'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
@@ -70,7 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 USE_I18N = True
