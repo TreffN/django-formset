@@ -1,8 +1,7 @@
-from django.contrib.gis.forms import PolygonField
 from django.forms import fields, forms
 
 from formset.validators import phone_number_validator
-from formset.widgets import PhoneNumberInput, LeafletClientWidget
+from formset.widgets import PhoneNumberInput
 
 
 class PhoneForm(forms.Form):
@@ -20,8 +19,4 @@ class PhoneForm(forms.Form):
         initial='+43 664 1234567',
         validators=[phone_number_validator],
         widget=PhoneNumberInput(attrs={'default-country-code': 'at', 'mobile-only': True}),
-    )
-
-    custom_leaflet = PolygonField(
-        widget=LeafletClientWidget()
     )

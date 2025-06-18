@@ -1,8 +1,7 @@
 from django.db import models
 
-#from django.contrib.gis.forms import PolygonField
 from formset.richtext.fields import RichTextField
-from django.contrib.gis.db.models import PolygonField, GeometryCollectionField
+from django.contrib.gis.db.models import GeometryCollectionField
 
 
 class Leaflet(models.Model):

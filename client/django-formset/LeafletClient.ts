@@ -50,8 +50,7 @@ class LeafletClientField {
  
     this.drawnGeometries.eachLayer(layer => {
       const geometry = layer.toGeoJSON().geometry;
-      geom_valid = geometry.type === 'LineString' ? false : true; // test
-      //geom_valid = geom_valid && !booleanValid(geometry); // correct
+      geom_valid = geom_valid && booleanValid(geometry);
       this.changeGeomColor(layer, geom_valid);
     });
 

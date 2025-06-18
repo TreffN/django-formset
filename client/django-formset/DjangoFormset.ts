@@ -19,7 +19,7 @@ import mainStyles from './DjangoFormset.scss';
 import { LeafletClientElement } from './LeafletClient';
 
 type FieldElement = HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
-type FieldValue = string|Array<string|Object>|any;
+type FieldValue = string|Array<string|Object>|undefined;
 
 const NON_FIELD_ERRORS = '__all__';
 const COLLECTION_ERRORS = '_collection_errors_';
@@ -74,7 +74,7 @@ class FieldGroup {
 		// <div role="group"> can contain one or more <input type="checkbox"> or <input type="radio"> elements
 		const allowedInputs = (i: Element) => i instanceof HTMLInputElement && i.name && i.form === form.element && i.type !== 'hidden';
 		let inputElements = Array.from(element.getElementsByTagName('INPUT')).filter(allowedInputs) as Array<HTMLInputElement>;
-		// for leaflet client
+		// TODO: make selector for django-leafletclient more specific
 		if (inputElements.length === 0) {
 			inputElements = Array.from(element.getElementsByTagName('DIV')) as unknown as Array<HTMLInputElement>
 		}
@@ -257,12 +257,13 @@ class FieldGroup {
 		this.fieldElements.forEach((fieldElement, index) => fieldElement.required = this.initialRequired[index]);
 	}
 
-	private assertUniqueName() : string { // TODO
+	private assertUniqueName() : string { // TODO: handle name attribute of div (leaflet) so that no error is thrown
 		let name = '__undefined__';
 		for (const element of this.fieldElements) {
 			if (name === '__undefined__') {
 				name = element.name ?? element.getAttribute('name');
 			} else {
+				// TODO: remove comment, when TODO from above handled
 				// if ((name !== element.name) && (name !== element.getAttribute('name')))
 				// 	throw new Error(`Duplicate name '${name}' on multiple input fields on '${element.name}'`);
 			}
@@ -427,7 +428,7 @@ class FieldGroup {
 				div_valid = element.checkValidity();
 				console.log('checkValidity()', div_valid);
 			}
-			if (!(element instanceof HTMLDivElement) &&!element.validity.valid) // element.validity.valid existiert nicht für Leaflet
+			if (!(element instanceof HTMLDivElement) &&!element.validity.valid) // element.validity.valid does not exist for leaflet
 				break;
 		}
 		if (!(element instanceof HTMLDivElement)){
@@ -1780,6 +1781,10 @@ class DjangoFormCollectionTemplate {
 	};
 
 	private parseHTMLElementWithScripts = (html:string) => {
+		/***
+		 * scripts in the given HTML are placed as new nodes in the DOM, so that the script is actually executed
+		 * especially needed for leaflet client
+		 */
 		const template = document.createElement('template');
 		template.innerHTML = html.trim();
 
@@ -2195,7 +2200,6 @@ export class DjangoFormset implements DjangoFormset {
 				throw new Error("<django-formset> requires attribute 'endpoint=\"server endpoint\"' for submission");
 			this.removeFreshCollections(); // TODO: isFreshAndEmpty should be set to false for leaflet, when geometry is drawn
 			const body = this.buildBody(extraData);
-			console.log('Body: ', body);
 			try {
 				const headers = new Headers();
 				headers.append('Accept', 'application/json');

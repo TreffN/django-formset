@@ -326,7 +326,7 @@ class LeafletCollectionView(DemoFormCollectionViewMixin, SessionFormCollectionVi
     collection_class = LeafletCollection
     template_name = 'testapp/form-collection.html'
     extra_context = {
-        'click_actions': 'submit -> reload !~ scrollToError',#'disable -> submit -> reload !~ scrollToError',
+        'click_actions': 'disable -> submit -> reload !~ scrollToError',
         'force_submission': False,
     }
 
