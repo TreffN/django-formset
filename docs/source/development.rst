@@ -38,16 +38,9 @@ tool-chain required to build the test application:
 	npm run docscss
 	mkdir workdir
 	export DJANGO_DEBUG=true
-	cd docs
-	make json
-	cd ../testapp
-	# to work with postgis
-	pip install psycopg2
-	DATABASE_ENGINE=postgres POSTGRES_DB=postgres POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_HOST=localhost POSTGRES_PORT=5555 ./manage.py migrate
-	DATABASE_ENGINE=postgres POSTGRES_DB=postgres POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_HOST=localhost POSTGRES_PORT=5555 ./manage.py runserver
-	# otherwise
-	./manage.py migrate
-	./manage.py runserver
+	sphinx-build -M json docs/source build
+	testapp/manage.py migrate
+	testapp/manage.py runserver
 
 Open http://localhost:8000/ in your browser. This should show the same documentation you're
 currently reading.
