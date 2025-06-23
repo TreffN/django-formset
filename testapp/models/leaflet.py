@@ -1,6 +1,5 @@
 from django.db import models
 
-from formset.richtext.fields import RichTextField
 from django.contrib.gis.db.models import GeometryCollectionField
 
 
@@ -29,9 +28,10 @@ class LeafletMap(models.Model):
         blank=True,
         null=True
     )
-    caption = RichTextField(
+    caption = models.CharField(
         blank=True,
         null=True,
+        max_length=150
     )
     leaflet = models.ForeignKey(
         Leaflet,
