@@ -19,9 +19,13 @@ class MapForm(ModelForm):
         fields = ['id', 'geometry', 'caption']
         widgets = {
             'geometry': LeafletClientWidget(
-                 # attrs={
+                  attrs={
+                      'settings_overrides': {
+                          'DEFAULT_CENTER': (50.7, 7.0),
+                          'DEFAULT_ZOOM': 10,
+                      }
                  #     'loadevent': 'load',
-                 #     }
+                      }
             )
         }
 

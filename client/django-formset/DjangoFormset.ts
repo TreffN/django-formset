@@ -76,7 +76,7 @@ class FieldGroup {
 		let inputElements = Array.from(element.getElementsByTagName('INPUT')).filter(allowedInputs) as Array<HTMLInputElement>;
 		// TODO: make selector for django-leafletclient more specific
 		if (inputElements.length === 0) {
-			inputElements = Array.from(element.getElementsByTagName('DIV')) as unknown as Array<HTMLInputElement>
+			inputElements = Array.from(element.querySelectorAll('div[is=django-leafletclient]')) as unknown as Array<HTMLInputElement>
 		}
 		
 		for (const element of inputElements) {
@@ -192,6 +192,9 @@ class FieldGroup {
 				 || window.customElements.get('django-datetimerangecalendar') && element.getAttribute('is') === 'django-datetimerangecalendar'
 				 || window.customElements.get('django-datetimerangepicker') && element.getAttribute('is') === 'django-datetimerangepicker')
 					return element.value ? element.value.split(';').map(v => v.slice(0, 16)) : ['', ''];
+			}
+			if (element.getAttribute('is') === 'django-leafletclient') {
+				return (element as unknown as LeafletClientElement).getGeometryCollection();
 			}
 			// all other input types just return their value
 			return element.value;
@@ -445,8 +448,11 @@ class FieldGroup {
 				element.dispatchEvent(new Event('invalid'));
 			}
 		} else {
-			this.setDirty();
-			if (!div_valid) element.dispatchEvent(new Event('invalid'));
+			this.setDirty(); // needed in order to avoid removing the field (especially leaflet map) when first added
+			if (this.form.validate() && !div_valid) {
+				// needed in order to validate form after geometry is drawn
+				element.dispatchEvent(new Event('invalid'));
+			}	
 		}
 	}
 
@@ -2198,7 +2204,7 @@ export class DjangoFormset implements DjangoFormset {
 		if (formsAreValid) {
 			if (!this.endpoint)
 				throw new Error("<django-formset> requires attribute 'endpoint=\"server endpoint\"' for submission");
-			this.removeFreshCollections(); // TODO: isFreshAndEmpty should be set to false for leaflet, when geometry is drawn
+			this.removeFreshCollections(); // isFreshAndEmpty should be set to false for leaflet, when geometry is drawn -> setDirty() in validate()
 			const body = this.buildBody(extraData);
 			try {
 				const headers = new Headers();
