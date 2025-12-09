@@ -13,8 +13,8 @@
 	<script src="{% url 'javascript-catalog' %}"></script>
 	<link href="{% static 'node_modules/ol/ol.css' %}" rel="stylesheet" type="text/css" media="screen">
 	<script src="{% static 'node_modules/ol/dist/ol.js' %}"></script>
-	{% leaflet_js %}
-	{% leaflet_css %}
+	{% leaflet_js plugins="forms" %}
+	{% leaflet_css plugins="forms" %}
 	<script type="module" src="{% if use_monolithic_build %}{% static 'formset/js/django-formset.monolith.js' %}{% else %}{% static 'formset/js/django-formset.js' %}{% endif %}"></script>
 </head>
 <body>

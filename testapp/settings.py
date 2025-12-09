@@ -34,22 +34,25 @@ except ImportError:
 else:
     INSTALLED_APPS.append('sphinx_view')
 
-if os.getenv('DATABASE_ENGINE') == 'postgres':
+#SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+
+if True:
+#if os.getenv('DATABASE_ENGINE') == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',#'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DB'),
-            'USER': os.getenv('POSTGRES_USER'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-            'HOST': os.getenv('POSTGRES_HOST'),
-            'PORT': os.getenv('POSTGRES_PORT', 5432),
+            'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+            'USER': os.getenv('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+            'HOST': os.getenv('POSTGRES_HOST','localhost'),
+            'PORT': os.getenv('POSTGRES_PORT', 5555),
             # 'CONN_MAX_AGE': 900,
         }
     }
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+            'ENGINE': 'django.contrib.gis.db.backends.spatialite',
             'NAME': Path(os.getenv('DJANGO_WORKDIR', BASE_DIR / 'workdir')) / 'testapp.sqlite3',
             'TEST': {
                 'NAME': Path(__file__).parent / 'test.sqlite3',  # live_server requires a file rather than :memory:
@@ -72,7 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 USE_I18N = True

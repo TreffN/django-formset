@@ -14,6 +14,7 @@ import {DateCalendarElement, DateTimeCalendarElement, DateRangeCalendarElement, 
 import {DateFieldElement, DatePickerElement, DateTimeFieldElement, DateTimePickerElement, DateRangeFieldElement, DateTimeRangeFieldElement, DateRangePickerElement, DateTimeRangePickerElement} from './django-formset/DateTime';
 import {FormDialogElement} from './django-formset/FormDialog';
 import {StepperCollectionElement} from './django-formset/StepperCollection';
+import { LeafletClientElement } from 'django-formset/LeafletClient';
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
@@ -31,6 +32,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
 	customElementNames.push('django-dual-selector');
 	window.customElements.define('django-phone-number', PhoneNumberElement, {extends: 'input'});
 	customElementNames.push('django-phone-number');
+	window.customElements.define('django-leafletclient', LeafletClientElement, {extends: 'div'});
+	customElementNames.push('django-leafletclient');
 	window.customElements.define('django-richtext', RichTextAreaElement, {extends: 'textarea'});
 	customElementNames.push('django-richtext');
 	window.customElements.whenDefined('django-richtext').then(() => {
