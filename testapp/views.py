@@ -47,7 +47,7 @@ from testapp.forms.country import CountryForm
 from testapp.forms.county import CountyForm
 from testapp.forms.customer import CustomerCollection
 from testapp.forms.gallerycollection import GalleryCollection
-from testapp.forms.leafletcollection import LeafletCollection
+from testapp.forms.regioncollection import RegionCollection
 from testapp.forms.issue import EditIssueCollection
 from testapp.forms.moment import MomentBoxForm, MomentCalendarForm, MomentInputForm, MomentPickerForm
 from testapp.forms.moon import MoonForm, MoonCalendarRenderer
@@ -66,7 +66,7 @@ from testapp.forms.user import UserCollection
 from testapp.forms.upload import UploadForm
 from testapp.models import BlogModel, Company, IssueModel, PersonModel, PollModel, Reporter, User
 from testapp.models.gallery import Gallery
-from testapp.models.leaflet import Leaflet
+from testapp.models.region import Region
 
 
 parser = Parser()
@@ -321,9 +321,9 @@ class GalleryCollectionView(DemoFormCollectionViewMixin, SessionFormCollectionVi
         'force_submission': False,
     }
 
-class LeafletCollectionView(DemoFormCollectionViewMixin, SessionFormCollectionViewMixin, EditCollectionView):
-    model = Leaflet
-    collection_class = LeafletCollection
+class RegionCollectionView(DemoFormCollectionViewMixin, SessionFormCollectionViewMixin, EditCollectionView):
+    model = Region
+    collection_class = RegionCollection
     template_name = 'testapp/form-collection.html'
     extra_context = {
         'click_actions': 'disable -> submit -> reload !~ scrollToError',
@@ -711,6 +711,6 @@ urlpatterns = [
     ), name='button-actions'),
     path('gallerycollection', GalleryCollectionView.as_view(
     ), name='gallerycollection'),
-    path('leafletcollection', LeafletCollectionView.as_view(
-    ), name='leafletcollection'),
+    path('regioncollection', RegionCollectionView.as_view(
+    ), name='regioncollection'),
 ]

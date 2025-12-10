@@ -4,7 +4,7 @@ from django.forms.models import ModelForm
 from formset.collection import FormCollection
 from formset.widgets import LeafletClientWidget
 
-from testapp.models.leaflet import LeafletMap, Leaflet
+from testapp.models.region import RegionMap, Region
 
 
 class MapForm(ModelForm):
@@ -15,7 +15,7 @@ class MapForm(ModelForm):
     )
 
     class Meta:
-        model = LeafletMap
+        model = RegionMap
         fields = ['id', 'geometry', 'caption']
         widgets = {
             'geometry': LeafletClientWidget(
@@ -30,28 +30,28 @@ class MapForm(ModelForm):
         }
 
 
-class LeafletMapCollection(FormCollection):
+class RegionMapCollection(FormCollection):
     min_siblings = 0
     extra_siblings = 1
-    leafletmap = MapForm()
-    legend = "Leaflet Maps"
-    add_label = "Add Leaflet Maps"
-    related_field = 'leaflet'
+    regionmap = MapForm()
+    legend = "Region Maps"
+    add_label = "Add Region Maps"
+    related_field = 'region'
 
     def retrieve_instance(self, data):
-        if data := data.get('leafletmap'):
+        if data := data.get('regionmap'):
             try:
-                return self.instance.leafletmaps.get(id=data.get('id') or 0)
-            except (AttributeError, LeafletMap.DoesNotExist, ValueError):
-                return LeafletMap(geometry=data.get('geometry'), leaflet=self.instance)
+                return self.instance.regionmaps.get(id=data.get('id') or 0)
+            except (AttributeError, RegionMap.DoesNotExist, ValueError):
+                return RegionMap(geometry=data.get('geometry'), region=self.instance)
 
-class LeafletForm(ModelForm):
+class RegionForm(ModelForm):
     class Meta:
-        model = Leaflet
+        model = Region
         fields = '__all__'
 
 
-class LeafletCollection(FormCollection):
-    leaflet = LeafletForm()
-    leafletmaps = LeafletMapCollection()
+class RegionCollection(FormCollection):
+    region = RegionForm()
+    regionmaps = RegionMapCollection()
 

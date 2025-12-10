@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.gis.db.models import PolygonField
 
 
-class Leaflet(models.Model):
+class Region(models.Model):
     name = models.CharField(
         verbose_name="Geometry name",
         max_length=50,
@@ -15,15 +15,15 @@ class Leaflet(models.Model):
     )
 
     class Meta:
-        verbose_name = "Map"
-        verbose_name_plural = "Maps"
+        verbose_name = "Region"
+        verbose_name_plural = "Regions"
         unique_together = ['name', 'created_by']
 
     def __str__(self):
         return self.name
 
 
-class LeafletMap(models.Model):
+class RegionMap(models.Model):
     geometry = PolygonField(
         blank=True,
         null=True
@@ -33,8 +33,8 @@ class LeafletMap(models.Model):
         null=True,
         max_length=150
     )
-    leaflet = models.ForeignKey(
-        Leaflet,
+    region = models.ForeignKey(
+        Region,
         on_delete=models.CASCADE,
-        related_name='leafletmaps'
+        related_name='regionmaps'
     )
