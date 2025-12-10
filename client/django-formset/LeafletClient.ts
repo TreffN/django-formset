@@ -57,7 +57,7 @@ class LeafletClientField {
     return geom_valid;
   }
 
-  public getGeometryCollection(): string | undefined {
+  public getPolygonCollection(): string | undefined {
     if (!this.map) return undefined;
 
     if (!this.geometries_drawn) {
@@ -71,12 +71,17 @@ class LeafletClientField {
       });
     }
 
-    const geometries = this.drawnGeometries.toGeoJSON().features.map(f => f.geometry);
-    const geometryCollection = {
-      type: 'GeometryCollection',
-      geometries: geometries,
+    const polygonFeature = this.drawnGeometries.toGeoJSON().features.findLast(f => (f.geometry?.geometry?.type ?? f.geometry?.type) === 'Polygon');
+
+    if (!polygonFeature) {
+      return undefined;
+    }
+    
+    const polygonCollection = {
+      type: polygonFeature.geometry?.geometry?.type ?? polygonFeature.geometry?.type,
+      coordinates: polygonFeature.geometry?.geometry?.coordinates ?? polygonFeature.geometry?.coordinates,
     };
-    return JSON.stringify(geometryCollection);
+    return JSON.stringify(polygonCollection);
   }
 
   public changeGeomColor(layer: Layer, is_valid: boolean) {
@@ -106,7 +111,7 @@ export class LeafletClientElement extends HTMLDivElement {
     return this[PN].checkValidity();
   }
 
-  getGeometryCollection() {
-    return this[PN].getGeometryCollection();
+  getPolygonCollection() {
+    return this[PN].getPolygonCollection();
   }
 }

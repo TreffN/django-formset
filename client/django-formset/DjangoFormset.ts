@@ -194,7 +194,7 @@ class FieldGroup {
 					return element.value ? element.value.split(';').map(v => v.slice(0, 16)) : ['', ''];
 			}
 			if (element.getAttribute('is') === 'django-leafletclient') {
-				return (element as unknown as LeafletClientElement).getGeometryCollection();
+				return (element as unknown as LeafletClientElement).getPolygonCollection();
 			}
 			// all other input types just return their value
 			return element.value;
@@ -209,7 +209,7 @@ class FieldGroup {
 					if ((element as HTMLInputElement).checked)
 						return element.value;
 				} else if (element.getAttribute('is') === 'django-leafletclient') {
-					return (element as unknown as LeafletClientElement).getGeometryCollection();
+					return (element as unknown as LeafletClientElement).getPolygonCollection();
 				}
 			}
 			return value;

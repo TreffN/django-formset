@@ -1,6 +1,6 @@
 from django.db import models
 
-from django.contrib.gis.db.models import GeometryCollectionField
+from django.contrib.gis.db.models import PolygonField
 
 
 class Leaflet(models.Model):
@@ -24,7 +24,7 @@ class Leaflet(models.Model):
 
 
 class LeafletMap(models.Model):
-    geometry = GeometryCollectionField(
+    geometry = PolygonField(
         blank=True,
         null=True
     )
