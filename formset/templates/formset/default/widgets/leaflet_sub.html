@@ -1,0 +1,19 @@
+{% extends 'leaflet/widget.html' %}
+
+{% block callback %}
+	console.log('leaflet_sub.html');
+	const mapContainer = map.getContainer();
+	const leafletClientEl = mapContainer.closest('div[is="django-leafletclient"]');
+	console.log('leafletClientEl: ', leafletClientEl);
+
+	leafletClientEl.addEventListener('leaflet-client-initialized', () => {
+		console.log('leaflet client initialized');
+		leafletClientEl.dispatchEvent(new CustomEvent('django-leaflet-client-on-map-ready', {
+			bubbles: true,
+			composed: true,
+			detail: {map}
+		}));
+	})
+	
+	
+{% endblock %}

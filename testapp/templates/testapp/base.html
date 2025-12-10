@@ -1,4 +1,6 @@
 {% load static %}
+{% load leaflet_tags %}
+
 <!DOCTYPE html>
 <html dir="ltr" lang="{{ LANGUAGE_CODE|default:'en' }}">
 
@@ -9,6 +11,10 @@
 	<link href="{% static 'formset/css/collections.css' %}" rel="stylesheet" type="text/css" media="screen">
 	<link href="{% static 'testapp/css/debug.css' %}" rel="stylesheet" type="text/css" media="screen">
 	<script src="{% url 'javascript-catalog' %}"></script>
+	<link href="{% static 'node_modules/ol/ol.css' %}" rel="stylesheet" type="text/css" media="screen">
+	<script src="{% static 'node_modules/ol/dist/ol.js' %}"></script>
+	{% leaflet_js %}
+	{% leaflet_css %}
 	<script type="module" src="{% if use_monolithic_build %}{% static 'formset/js/django-formset.monolith.js' %}{% else %}{% static 'formset/js/django-formset.js' %}{% endif %}"></script>
 </head>
 <body>

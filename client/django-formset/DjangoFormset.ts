@@ -16,9 +16,10 @@ import spinnerIcon from '../icons/spinner.svg';
 import okayIcon from '../icons/okay.svg';
 import bummerIcon from '../icons/bummer.svg';
 import mainStyles from './DjangoFormset.scss';
+import { LeafletClientElement } from './LeafletClient';
 
 type FieldElement = HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
-type FieldValue = string|Array<string|Object>;
+type FieldValue = string|Array<string|Object>|undefined;
 
 const NON_FIELD_ERRORS = '__all__';
 const COLLECTION_ERRORS = '_collection_errors_';
@@ -72,7 +73,12 @@ class FieldGroup {
 
 		// <div role="group"> can contain one or more <input type="checkbox"> or <input type="radio"> elements
 		const allowedInputs = (i: Element) => i instanceof HTMLInputElement && i.name && i.form === form.element && i.type !== 'hidden';
-		const inputElements = Array.from(element.getElementsByTagName('INPUT')).filter(allowedInputs) as Array<HTMLInputElement>;
+		let inputElements = Array.from(element.getElementsByTagName('INPUT')).filter(allowedInputs) as Array<HTMLInputElement>;
+		// TODO: make selector for django-leafletclient more specific
+		if (inputElements.length === 0) {
+			inputElements = Array.from(element.querySelectorAll('div[is=django-leafletclient]')) as unknown as Array<HTMLInputElement>
+		}
+		
 		for (const element of inputElements) {
 			switch (element.type) {
 				case 'checkbox':
@@ -91,10 +97,15 @@ class FieldGroup {
 					element.addEventListener('invalid', () => this.showErrorMessage(element));
 					break;
 				default:
-					element.addEventListener('focus', () => this.touch());
-					element.addEventListener('input', () => this.inputted());
-					element.addEventListener('blur', () => this.validate());
-					element.addEventListener('invalid', () => this.showErrorMessage(element));
+					if (element.getAttribute('is') === 'django-leafletclient') {
+						element.addEventListener('django-leaflet-drawn', () => {this.validate()});
+						element.addEventListener('invalid', () => this.showErrorMessage(element));
+					} else {
+						element.addEventListener('focus', () => this.touch());
+						element.addEventListener('input', () => this.inputted());
+						element.addEventListener('blur', () => this.validate());
+						element.addEventListener('invalid', () => this.showErrorMessage(element));
+					}
 					break;
 			}
 		}
@@ -182,6 +193,9 @@ class FieldGroup {
 				 || window.customElements.get('django-datetimerangepicker') && element.getAttribute('is') === 'django-datetimerangepicker')
 					return element.value ? element.value.split(';').map(v => v.slice(0, 16)) : ['', ''];
 			}
+			if (element.getAttribute('is') === 'django-leafletclient') {
+				return (element as unknown as LeafletClientElement).getPolygonCollection();
+			}
 			// all other input types just return their value
 			return element.value;
 		} else {
@@ -194,6 +208,8 @@ class FieldGroup {
 				} else if (element.type === 'radio') {
 					if ((element as HTMLInputElement).checked)
 						return element.value;
+				} else if (element.getAttribute('is') === 'django-leafletclient') {
+					return (element as unknown as LeafletClientElement).getPolygonCollection();
 				}
 			}
 			return value;
@@ -244,14 +260,15 @@ class FieldGroup {
 		this.fieldElements.forEach((fieldElement, index) => fieldElement.required = this.initialRequired[index]);
 	}
 
-	private assertUniqueName() : string {
+	private assertUniqueName() : string { // TODO: handle name attribute of div (leaflet) so that no error is thrown
 		let name = '__undefined__';
 		for (const element of this.fieldElements) {
 			if (name === '__undefined__') {
-				name = element.name;
+				name = element.name ?? element.getAttribute('name');
 			} else {
-				if (name !== element.name)
-					throw new Error(`Duplicate name '${name}' on multiple input fields on '${element.name}'`);
+				// TODO: remove comment, when TODO from above handled
+				// if ((name !== element.name) && (name !== element.getAttribute('name')))
+				// 	throw new Error(`Duplicate name '${name}' on multiple input fields on '${element.name}'`);
 			}
 		}
 		return name;
@@ -333,8 +350,10 @@ class FieldGroup {
 			this.errorPlaceholder.innerHTML = '';
 		}
 		for (const element of this.fieldElements) {
-			if (element.validity.customError)
-				element.setCustomValidity('');
+			if (element.validity) {
+				if (element.validity.customError)
+					element.setCustomValidity('');
+			}
 		}
 	}
 
@@ -388,38 +407,52 @@ class FieldGroup {
 		this.element.classList.add('dj-submitted');
 	}
 
-	private showErrorMessage(element: HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement) {
-		const submitted = this.element.classList.contains('dj-submitted');
-		if (!(this.isTouched || submitted) || !this.form.formset.showFeedbackMessages || !this.errorPlaceholder)
-			return;
-		for (const [key, message] of this.errorMessages) {
-			if (element.validity[key as keyof ValidityState]) {
-				this.errorPlaceholder.innerHTML = message;
+	private showErrorMessage(element: HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|HTMLDivElement) {
+		if(element instanceof HTMLDivElement) {
+			if (this.errorPlaceholder) this.errorPlaceholder.innerHTML = this.errorMessages.get('badInput') ?? 'error';
+		} else {
+			const submitted = this.element.classList.contains('dj-submitted');
+			if (!(this.isTouched || submitted) || !this.form.formset.showFeedbackMessages || !this.errorPlaceholder)
+				return;
+			for (const [key, message] of this.errorMessages) {
+				if (element.validity[key as keyof ValidityState]) {
+					this.errorPlaceholder.innerHTML = message;
+				}
 			}
 		}
 	}
 
 	public validate() {
 		let element: FieldElement|null = null;
+		let div_valid: boolean = true;
 		for (element of this.fieldElements) {
-			if (element instanceof HTMLInputElement && element.hasAttribute('is')) {
+			if ((element instanceof HTMLInputElement || element instanceof HTMLDivElement) && element.hasAttribute('is')) {
 				// input fields converted to web components may additionally validate themselves
-				element.checkValidity();
+				div_valid = element.checkValidity();
+				console.log('checkValidity()', div_valid);
 			}
-			if (!element.validity.valid)
+			if (!(element instanceof HTMLDivElement) &&!element.validity.valid) // element.validity.valid does not exist for leaflet
 				break;
 		}
-		if (!element)
-			throw new Error("No input element to validate.");
-
-		if (!element.validity.valid) {
-			if (element instanceof HTMLInputElement && element.type === 'file') {
-				this.validateFileInput(element, this.form.formset.showFeedbackMessages);
+		if (!(element instanceof HTMLDivElement)){
+			if (!element)
+				throw new Error("No input element to validate.");
+	
+			if (!element.validity.valid) {
+				if (element instanceof HTMLInputElement && element.type === 'file') {
+					this.validateFileInput(element, this.form.formset.showFeedbackMessages);
+				}
 			}
-		}
-		if (this.form.validate() && !element.validity.valid) {
-			// the form validated but the field did not, so dispatch an 'invalid' event
-			element.dispatchEvent(new Event('invalid'));
+			if (this.form.validate() && !element.validity.valid) {
+				// the form validated but the field did not, so dispatch an 'invalid' event
+				element.dispatchEvent(new Event('invalid'));
+			}
+		} else {
+			this.setDirty(); // needed in order to avoid removing the field (especially leaflet map) when first added
+			if (this.form.validate() && !div_valid) {
+				// needed in order to validate form after geometry is drawn
+				element.dispatchEvent(new Event('invalid'));
+			}	
 		}
 	}
 
@@ -475,6 +508,9 @@ class FieldGroup {
 	public setValidationError(): boolean {
 		let element: FieldElement|null = null;
 		for (element of this.fieldElements) {
+			if (element instanceof HTMLDivElement) {
+				return true
+			}
 			if (!element.validity.valid)
 				break;
 		}
@@ -1214,7 +1250,7 @@ class DjangoForm {
 	aggregateValues(): Map<string, FieldValue> {
 		const data = new Map<string, FieldValue>();
 		for (const fieldGroup of this.fieldGroups) {
-			data.set(fieldGroup.name, fieldGroup.aggregateValue());
+			data.set(fieldGroup.name ?? 'caption', fieldGroup.aggregateValue()); // caption for leaflet caption
 		}
 		// hidden fields are not handled by a <div role="group">
 		for (const element of this.hiddenInputFields.filter(e => e.type === 'hidden')) {
@@ -1732,7 +1768,8 @@ class DjangoFormCollectionTemplate {
 			context[`siblingId_${k + 1}`] = `$\{siblingId_${k}\}`;
 		}
 		const renderedHTML = this.renderEmptyCollection(context);
-		this.element.insertAdjacentHTML('beforebegin', renderedHTML);
+		const fragment = this.parseHTMLElementWithScripts(renderedHTML);
+		this.element.insertAdjacentElement('beforebegin', fragment);
 		const newCollectionElement = this.element.previousElementSibling;
 		if (!(newCollectionElement instanceof HTMLElement))
 			throw new Error("Unable to insert empty <django-form-collection> element.");
@@ -1748,6 +1785,63 @@ class DjangoFormCollectionTemplate {
 		siblings.forEach(sibling => sibling.updateRemoveButtonAttrs());
 		this.updateAddButtonAttrs();
 	};
+
+	private parseHTMLElementWithScripts = (html:string) => {
+		/***
+		 * scripts in the given HTML are placed as new nodes in the DOM, so that the script is actually executed
+		 * especially needed for leaflet client
+		 */
+		const template = document.createElement('template');
+		template.innerHTML = html.trim();
+
+		let firstElement = template.content.firstElementChild;
+
+		if (!firstElement) {
+			throw new Error("No root element in given HTML");
+		}
+
+		const scripts = firstElement.querySelectorAll('script');
+		scripts.forEach(oldScript => {
+			const newScript: HTMLScriptElement = document.createElement('script');
+			Array.from(oldScript.attributes).forEach(attr =>
+				newScript.setAttribute(attr.name, attr.value)
+			);
+			// TODO: other possibility to change loadevent?
+			let modifiedCode = oldScript.textContent?.includes('var loadevents = ["load"];') ? 
+				oldScript.textContent.replace('var loadevents = ["load"];',	'var loadevents = [];') : oldScript.textContent;
+			newScript.textContent = modifiedCode;
+			oldScript.parentNode.replaceChild(newScript, oldScript);
+		});
+		
+		// Adjust id for leaflet, otherwise: Map container is already initialized
+		if (firstElement) {
+			const div_leaflet = firstElement.querySelector('div[is=django-leafletclient]');
+
+			// new element
+			const newDivElement: HTMLDivElement = document.createElement('div');
+			Array.from(div_leaflet.attributes).forEach(attr =>
+				newDivElement.setAttribute(attr.name, attr.value)
+			);
+
+			// new content: innerHTML and attribute.value
+			const div_id = div_leaflet?.querySelector('div[id]')?.id.split('-map')[0];
+			const addOn = firstElement.getAttribute('sibling-position');
+			div_leaflet?.childNodes.forEach(node => {
+				if (div_id && node.textContent?.includes(div_id)){
+					const modifiedContent = node.textContent.replaceAll(div_id, div_id + addOn);
+					node.innerHTML = modifiedContent;
+				}
+				
+				Array.from(node.attributes).forEach(attr => {
+					if (attr.value.includes(div_id)) {
+						node.setAttribute(attr.name, attr.value.includes('-map') ? div_id + addOn + '-map' : attr.value+addOn);
+					}
+				});
+
+			});
+		}
+		return firstElement;
+	}
 
 	private getNextPositionAndSiblingId() {
 		// look for the highest position number inside interconnected DjangoFormCollectionSiblings
@@ -1873,11 +1967,23 @@ export class DjangoFormset implements DjangoFormset {
 
 	public assignFieldsToForms(parentElement?: Element) {
 		parentElement = parentElement ?? this.element;
-		for (const fieldElement of parentElement.querySelectorAll('INPUT, SELECT, TEXTAREA, BUTTON')) {
+		for (const fieldElement of parentElement.querySelectorAll('INPUT, SELECT, TEXTAREA, BUTTON, DIV[is="django-leafletclient"]')) { // TODO: swap django-leafletclient to variable
 			const formId = fieldElement.getAttribute('form');
-			if (!formId)
-				continue;
-			const djangoForms = this.forms.filter(form => form.formId && form.formId === formId);
+			let djangoForms: DjangoForm[] = [];
+			if (!formId) {
+				if (fieldElement instanceof HTMLDivElement) {
+					// find corresponding django-form for leaflet map
+					fieldElement.setAttribute('name', 'geometry');
+					const form_collections = parentElement.matches('django-form-collection') ? [parentElement] :
+						parentElement.querySelectorAll('django-form-collection[sibling-position]')
+					const leaflet = Array.from(form_collections).find(form => 
+						(form.querySelector('DIV[is="django-leafletclient"]') && (form.querySelector('div[id]').id === fieldElement.querySelector('div[id]').id))); 
+					const leaflet_form = leaflet?.querySelector('form');
+					djangoForms = this.forms.filter(form => form.formId === leaflet_form?.getAttribute('id'))
+				}
+			} else {
+				djangoForms = this.forms.filter(form => form.formId && form.formId === formId);
+			}
 			if (djangoForms.length < 1)
 				continue;
 			if (djangoForms.length > 1)
@@ -2098,7 +2204,7 @@ export class DjangoFormset implements DjangoFormset {
 		if (formsAreValid) {
 			if (!this.endpoint)
 				throw new Error("<django-formset> requires attribute 'endpoint=\"server endpoint\"' for submission");
-			this.removeFreshCollections();
+			this.removeFreshCollections(); // isFreshAndEmpty should be set to false for leaflet, when geometry is drawn -> setDirty() in validate()
 			const body = this.buildBody(extraData);
 			try {
 				const headers = new Headers();
@@ -2257,6 +2363,7 @@ export class DjangoFormset implements DjangoFormset {
 		for (const form of this.forms) {
 			const errors = form.name ? getDataValue(body, form.name.split('.'), null) : body;
 			if (!isEmpty(errors)) {
+				// TODO: report backend errors?
 				form.reportCustomErrors(new Map(Object.entries(errors)));
 				form.reportValidity();
 			} else {

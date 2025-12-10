@@ -21,6 +21,7 @@ from django.utils.encoding import uri_to_iri
 from django.utils.functional import cached_property
 from django.utils.timezone import datetime, now
 from django.utils.translation import gettext_lazy as _
+from leaflet.forms.widgets import LeafletWidget
 
 from formset.calendar import CalendarRenderer
 
@@ -608,3 +609,15 @@ class DateTimePicker(CalendarRendererMixin, DateTimeTextbox):
             assert self.interval in CalendarRenderer.valid_intervals, \
                 f"{self.interval} is not a valid interval for {self.__class__}"
         super().__init__(attrs=default_attrs, calendar_renderer=calendar_renderer)
+
+
+class LeafletClientWidget(LeafletWidget):
+    template_name = 'formset/default/widgets/leaflet.html'
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'is': 'django-leafletclient',
+        }
+        if attrs:
+            print(attrs)
+            default_attrs.update(**attrs)
+        super().__init__(attrs=default_attrs)

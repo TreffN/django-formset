@@ -15,7 +15,12 @@
     "testclient": "jest"
   },
   "dependencies": {
-    "flag-icons": "^6.15.0"
+    "@turf/boolean-valid": "^7.2.0",
+    "flag-icons": "^6.15.0",
+    "leaflet": "^1.9.4",
+    "leaflet-draw": "^1.0.4",
+    "ol": "^10.5.0",
+    "wkt": "^0.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.9",
@@ -55,6 +60,8 @@
     "@tiptap/extension-text-style": "^2.11.5",
     "@tiptap/extension-underline": "^2.11.5",
     "@types/jest": "^29.5.14",
+    "@types/leaflet": "^1.9.17",
+    "@types/leaflet-draw": "^1.0.12",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.get": "^4.4.9",
     "@types/lodash.isempty": "^4.4.9",
