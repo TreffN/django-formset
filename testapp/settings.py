@@ -34,10 +34,7 @@ except ImportError:
 else:
     INSTALLED_APPS.append('sphinx_view')
 
-#SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
-
-if True:
-#if os.getenv('DATABASE_ENGINE') == 'postgres':
+if os.getenv('DATABASE_ENGINE') == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',#'django.db.backends.postgresql',

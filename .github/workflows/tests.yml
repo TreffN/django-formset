@@ -67,5 +67,4 @@ jobs:
       run: |
         export PYTEST_USE_MONOLITHIC_BUILD=${{ matrix.use-monolithic }}
         export DATABASE_ENGINE=postgres
-        export SPATIALITE_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
         python -m pytest testapp
