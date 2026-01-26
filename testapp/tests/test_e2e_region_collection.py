@@ -10,18 +10,6 @@ from .utils import get_javascript_catalog, ContextMixin
 from formset.views import FormCollectionView
 from testapp.forms.regioncollection import RegionCollection
 
-# class DemoFormView(ContextMixin, FormView):
-#     template_name = 'testapp/native-form.html' #'../../formset/templates/formset/default/widgets/leaflet.html'
-#     success_url = '/success'
-
-# urlpatterns = [
-#     path('regioncollection', DemoFormView.as_view(
-#         form_class=MapForm,
-#         extra_context={'click_actions': 'submit -> proceed', 'force_submission': True},
-#     ), name='regioncollection'),
-#     get_javascript_catalog(),
-# ]
-
 class FormCollectionView(ContextMixin, FormCollectionView):
     success_url='/success'
 
