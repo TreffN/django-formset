@@ -43,9 +43,6 @@ tool-chain required to build the test application:
 	cd ../testapp
 	# to work with postgres DB
 	export DATABASE_ENGINE=postgres
-	DATABASE_ENGINE=postgres POSTGRES_DB=postgres POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_HOST=localhost POSTGRES_PORT=5555 ./manage.py migrate
-	DATABASE_ENGINE=postgres POSTGRES_DB=postgres POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_HOST=localhost POSTGRES_PORT=5555 ./manage.py runserver
-	# otherwise
 	./manage.py migrate
 	./manage.py runserver
 
