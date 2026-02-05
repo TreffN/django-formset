@@ -52,6 +52,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install "Django==${{ matrix.django-version }}"
         python -m pip install -r testapp/requirements.txt
+        pip3 install pytest-playwright
         playwright install
     - name: Build Parsers
       run: |
@@ -65,4 +66,5 @@ jobs:
     - name: Test with pytest
       run: |
         export PYTEST_USE_MONOLITHIC_BUILD=${{ matrix.use-monolithic }}
+        export DATABASE_ENGINE=postgres
         python -m pytest testapp

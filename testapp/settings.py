@@ -49,7 +49,7 @@ if os.getenv('DATABASE_ENGINE') == 'postgres':
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+            'ENGINE': 'django.contrib.gis.db.backends.spatialite',
             'NAME': Path(os.getenv('DJANGO_WORKDIR', BASE_DIR / 'workdir')) / 'testapp.sqlite3',
             'TEST': {
                 'NAME': Path(__file__).parent / 'test.sqlite3',  # live_server requires a file rather than :memory:
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 USE_I18N = True
