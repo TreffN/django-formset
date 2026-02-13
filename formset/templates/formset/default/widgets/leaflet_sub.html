@@ -5,15 +5,17 @@
 	const mapContainer = map.getContainer();
 	const leafletClientEl = mapContainer.closest('div[is="django-leafletclient"]');
 	console.log('leafletClientEl: ', leafletClientEl);
+	const wms = "{{ wms }}";
 
 	leafletClientEl.addEventListener('leaflet-client-initialized', () => {
 		console.log('leaflet client initialized');
 		leafletClientEl.dispatchEvent(new CustomEvent('django-leaflet-client-on-map-ready', {
 			bubbles: true,
 			composed: true,
-			detail: {map}
+			detail: {
+				map: map,
+				wms: wms
+			}
 		}));
 	})
-	
-	
 {% endblock %}

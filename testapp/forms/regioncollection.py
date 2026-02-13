@@ -23,9 +23,17 @@ class MapForm(ModelForm):
                       'settings_overrides': {
                           'DEFAULT_CENTER': (50.7, 7.0),
                           'DEFAULT_ZOOM': 10,
+                      },
+                      'wms': {
+                          'url': 'https://ows.terrestris.de/osm/service?',
+                          'config': {
+                              'layers': 'OSM-Overlay-WMS',
+                              'format': 'image/png',
+                              'transparent': True,
+                              'attribution': '© terrestris GmbH & Co. KG',
+                          }
                       }
-                 #     'loadevent': 'load',
-                      }
+                  }
             )
         }
 

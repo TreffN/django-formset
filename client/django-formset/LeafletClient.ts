@@ -41,6 +41,13 @@ class LeafletClientField {
     this.divElement.addEventListener('django-leaflet-client-on-map-ready', evt => {
       const map = (evt as CustomEvent).detail.map as L.Map;
       me.setMap(map);
+
+      let wms = (evt as CustomEvent).detail.wms as string;
+      wms = wms.replaceAll('&#x27;', "'").replaceAll("'", '"').replaceAll('True', 'true').replaceAll('False', 'false');
+      const wms_json = JSON.parse(wms);
+      if (wms_json.url && wms_json.config.layers) {
+        L.tileLayer.wms(wms_json.url,wms_json.config).addTo(map);
+      }
     });
     this.divElement.dispatchEvent(new CustomEvent('leaflet-client-initialized', {}));
   }
