@@ -167,3 +167,30 @@ using the parameter ``max_options_per_line`` when configuring its :ref:`form-ren
 In addition to the default widgets shown here, **django-formset** offers a set of
 :ref:`alternative-widgets`, which offer more functionality but additionally require a client-side
 implementation.
+
+LeafletClientWidget
+===================
+The ``LeafletWidget`` is extended by adding functionality that enables client-side validation of the geometry drawn on the map. In addition to the validating process, a configuration for WMS-layers is added to the widget.
+
+Configuration
+-------------
+
+In order to configure the WMS-layer for this widget it can be called as follows:
+
+.. code-block:: python
+
+    LeafletClientWidget(
+        attrs={
+            'wms': {
+                'url': <wms url>,
+                'config': {
+                    'layers': <layer name>,
+                    'format': 'image/png',
+                    'transparent': True,
+                    ...
+                }
+            }
+        }
+    )
+
+Where the ``config``-block can be configured as documented here: https://leafletjs.com/reference.html#tilelayer-wms
